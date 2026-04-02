@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <world name="harmonic_minimal">
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>2.268e-06 4.638e-05 -4.178e-05</magnetic_field>
+    <physics name="default_physics">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1.0</ambient>
+      <background>0.7 0.7 0.7 1.0</background>
+      <shadows>false</shadows>
+    </scene>
+  </world>
+</sdf>

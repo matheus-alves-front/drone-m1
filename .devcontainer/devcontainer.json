@@ -1,0 +1,20 @@
+{
+  "name": "drone-sim-humble-harmonic",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "containerEnv": {
+    "ROS_DISTRO": "humble",
+    "UBUNTU_VERSION": "22.04",
+    "GZ_VERSION": "harmonic"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-iot.vscode-ros",
+        "ms-python.python",
+        "ms-vscode.vscode-json",
+        "streetsidesoftware.code-spell-checker"
+      ]
+    }
+  },
+  "postCreateCommand": "bash scripts/bootstrap/validate-phase-0.sh && bash scripts/sim/validate-phase-1.sh"
+}

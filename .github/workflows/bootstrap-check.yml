@@ -1,0 +1,23 @@
+name: Bootstrap Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  phase-0-bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate phase 0 bootstrap
+        run: bash scripts/bootstrap/validate-phase-0.sh
+
+      - name: Run phase 0 unit tests
+        run: python3 -m unittest scripts.tooling.tests.test_phase0_structure
