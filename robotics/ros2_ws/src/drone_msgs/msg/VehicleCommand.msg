@@ -1,0 +1,7 @@
+builtin_interfaces/Time stamp
+string command
+float32 target_altitude_m
+float32 target_absolute_altitude_m
+float32 target_yaw_deg
+float64 target_latitude_deg
+float64 target_longitude_deg

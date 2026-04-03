@@ -1,0 +1,11 @@
+builtin_interfaces/Time stamp
+bool tracked
+uint32 track_id
+string label
+float32 confidence
+float32 center_x
+float32 center_y
+float32 width
+float32 height
+uint32 age
+string state

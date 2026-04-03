@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Consolidar a baseline da Fase 1 antes da vendorizaçao real do PX4 e da subida da simulacao minima.
+Consolidar a baseline da Fase 1 ate a subida real e repetivel da simulacao minima.
 
 ## Baseline oficial
 
@@ -25,4 +25,7 @@ Consolidar a baseline da Fase 1 antes da vendorizaçao real do PX4 e da subida d
 
 - Verificar que os artefatos minimos da simulacao existem.
 - Preparar o fluxo oficial de submodule para o PX4.
+- Registrar a ordem oficial de subida do stack minimo.
+- Executar `scripts/sim/start.sh --check` e `scripts/sim/stop.sh --check`.
+- Executar `scripts/sim/validate-phase-1-container.sh` em Ubuntu 22.04 compatível com Gazebo Harmonic.
 - Nao marcar a fase como concluida antes da subida real de PX4 SITL + Gazebo Harmonic.

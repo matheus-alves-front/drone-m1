@@ -1,0 +1,9 @@
+builtin_interfaces/Time stamp
+bool active
+bool mission_abort_requested
+bool vehicle_command_sent
+string rule
+string action
+string source
+string detail
+uint32 trigger_count

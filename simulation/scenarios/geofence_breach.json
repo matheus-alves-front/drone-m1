@@ -1,0 +1,16 @@
+{
+  "name": "geofence_breach",
+  "objective": "Run patrol with a tight safety geofence and verify that a real position breach aborts the mission and commands return-to-home.",
+  "connection": {
+    "system_address": "udp://:14540",
+    "connection_timeout_s": 20.0,
+    "ready_timeout_s": 20.0,
+    "action_timeout_s": 20.0
+  },
+  "failure": {
+    "type": "geofence_breach",
+    "injection_mode": "runtime_detection",
+    "trigger_phase": "patrol",
+    "expected_action": "return_to_home"
+  }
+}

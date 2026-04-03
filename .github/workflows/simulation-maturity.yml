@@ -1,0 +1,81 @@
+name: Simulation Maturity
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  local-quality:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: apps/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        run: npm install --prefix apps/dashboard --no-fund --no-audit
+
+      - name: Validate simulation maturity locally
+        run: bash scripts/ci/validate-phase-8.sh --local-only
+
+  runtime-smoke:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Validate minimal runtime stack
+        run: bash scripts/sim/validate-phase-1-container.sh
+
+      - name: Validate takeoff_land runtime scenario
+        run: bash scripts/scenarios/validate-phase-2-container.sh
+
+      - name: Upload runtime smoke logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-smoke-logs
+          path: .sim-logs
+          if-no-files-found: ignore
+
+  runtime-autonomy:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Validate patrol_basic runtime scenario
+        run: bash robotics/ros2_ws/scripts/validate-phase-4-container.sh
+
+      - name: Validate safety runtime scenarios
+        run: bash robotics/ros2_ws/scripts/validate-phase-5-container.sh
+
+      - name: Validate perception runtime scenarios
+        run: bash robotics/ros2_ws/scripts/validate-phase-6-container.sh
+
+      - name: Upload runtime autonomy logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-autonomy-logs
+          path: .sim-logs
+          if-no-files-found: ignore

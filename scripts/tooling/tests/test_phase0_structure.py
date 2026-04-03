@@ -12,7 +12,7 @@ class Phase0StructureTest(unittest.TestCase):
     def test_required_paths_exist(self) -> None:
         required_paths = [
             ROOT / "docs/PROJECT-EXECUTION-CHECKLIST.md",
-            ROOT / "docs/PHASE-0-OPEN-DECISIONS.md",
+            ROOT / "docs/decisions/PHASE-0-OPEN-DECISIONS.md",
             ROOT / "robotics/ros2_ws/scripts/validate-workspace.sh",
             ROOT / "simulation/scenarios/README.md",
             ROOT / "services/telemetry-api/README.md",

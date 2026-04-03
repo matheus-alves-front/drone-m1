@@ -1,0 +1,16 @@
+{
+  "name": "failsafe_rc_loss",
+  "objective": "Trigger a simulated RC loss during patrol and verify that safety aborts the mission and commands return-to-home.",
+  "connection": {
+    "system_address": "udp://:14540",
+    "connection_timeout_s": 20.0,
+    "ready_timeout_s": 20.0,
+    "action_timeout_s": 20.0
+  },
+  "failure": {
+    "type": "rc_loss",
+    "injection_mode": "safety_fault",
+    "trigger_phase": "patrol",
+    "expected_action": "return_to_home"
+  }
+}

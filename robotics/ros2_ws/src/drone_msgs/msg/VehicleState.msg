@@ -1,0 +1,13 @@
+builtin_interfaces/Time stamp
+bool connected
+bool armed
+bool landed
+bool failsafe
+bool preflight_checks_pass
+bool position_valid
+string nav_state
+float32 altitude_m
+float32 relative_altitude_m
+float32 absolute_altitude_m
+float64 latitude_deg
+float64 longitude_deg

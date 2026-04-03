@@ -8,8 +8,18 @@
 
   <buildtool_depend>ament_python</buildtool_depend>
 
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>drone_msgs</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>drone_mission</exec_depend>
+  <exec_depend>drone_perception</exec_depend>
+  <exec_depend>drone_px4</exec_depend>
+  <exec_depend>drone_safety</exec_depend>
+  <exec_depend>drone_telemetry</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
 
   <export>
     <build_type>ament_python</build_type>

@@ -1,0 +1,20 @@
+px4_bridge:
+  ros__parameters:
+    state_topic: /drone/vehicle_state
+    command_topic: /drone/vehicle_command
+    command_status_topic: /drone/vehicle_command_status
+    publish_rate_hz: 5.0
+    telemetry_timeout_s: 1.5
+    default_takeoff_altitude_m: 3.0
+    target_system: 1
+    target_component: 1
+    source_system: 1
+    source_component: 1
+    px4_vehicle_status_topic: /fmu/out/vehicle_status
+    px4_vehicle_local_position_topic: /fmu/out/vehicle_local_position
+    px4_vehicle_global_position_topic: /fmu/out/vehicle_global_position
+    px4_vehicle_land_detected_topic: /fmu/out/vehicle_land_detected
+    px4_vehicle_control_mode_topic: /fmu/out/vehicle_control_mode
+    px4_failsafe_flags_topic: /fmu/out/failsafe_flags
+    px4_vehicle_command_ack_topic: /fmu/out/vehicle_command_ack
+    px4_vehicle_command_input_topic: /fmu/in/vehicle_command

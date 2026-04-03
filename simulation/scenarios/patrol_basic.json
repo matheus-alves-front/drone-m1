@@ -1,0 +1,24 @@
+{
+  "name": "patrol_basic",
+  "objective": "Execute a basic square patrol route, return to home and land.",
+  "connection": {
+    "system_address": "udp://:14540",
+    "connection_timeout_s": 20.0,
+    "ready_timeout_s": 20.0,
+    "action_timeout_s": 20.0
+  },
+  "flight": {
+    "takeoff_altitude_m": 3.0,
+    "hover_duration_s": 3.0,
+    "arrival_tolerance_m": 2.5,
+    "takeoff_timeout_s": 45.0,
+    "waypoint_timeout_s": 60.0,
+    "land_timeout_s": 60.0,
+    "abort_land_timeout_s": 60.0
+  },
+  "patrol": {
+    "waypoint_offsets_north_m": [15.0, 15.0, 0.0],
+    "waypoint_offsets_east_m": [0.0, 15.0, 15.0],
+    "return_to_home": true
+  }
+}

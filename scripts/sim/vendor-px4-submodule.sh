@@ -3,7 +3,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PX4_PATH="$ROOT_DIR/third_party/PX4-Autopilot"
+PX4_PATH_REL="third_party/PX4-Autopilot"
+PX4_PATH="$ROOT_DIR/$PX4_PATH_REL"
 PX4_REMOTE_URL="${PX4_REMOTE_URL:-https://github.com/PX4/PX4-Autopilot.git}"
 PX4_TAG="${PX4_TAG:-v1.16.1}"
 
@@ -14,16 +15,16 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -e "$PX4_PATH" ]] && ! git submodule status -- "$PX4_PATH" >/dev/null 2>&1; then
+if [[ -e "$PX4_PATH" ]] && ! git submodule status -- "$PX4_PATH_REL" >/dev/null 2>&1; then
   echo "Path $PX4_PATH already exists but is not registered as a git submodule." >&2
   echo "Remove the conflicting path before adding the PX4 submodule." >&2
   exit 1
 fi
 
-if git submodule status -- "$PX4_PATH" >/dev/null 2>&1; then
-  git submodule update --init --recursive "$PX4_PATH"
+if git submodule status -- "$PX4_PATH_REL" >/dev/null 2>&1; then
+  git submodule update --init --recursive "$PX4_PATH_REL"
 else
-  git submodule add "$PX4_REMOTE_URL" "$PX4_PATH"
+  git submodule add "$PX4_REMOTE_URL" "$PX4_PATH_REL"
 fi
 
 git -C "$PX4_PATH" fetch --tags --force

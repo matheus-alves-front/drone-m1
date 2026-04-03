@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>drone_px4</name>
+  <version>0.0.0</version>
+  <description>PX4 adapter boundary for the drone autonomy ROS 2 workspace.</description>
+  <maintainer email="matheusalves@example.com">matheusalves</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>drone_msgs</exec_depend>
+  <exec_depend>px4_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

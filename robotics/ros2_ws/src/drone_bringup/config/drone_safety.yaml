@@ -1,0 +1,23 @@
+/**:
+  ros__parameters:
+    state_topic: /drone/vehicle_state
+    mission_status_topic: /drone/mission_status
+    mission_command_topic: /drone/mission_command
+    vehicle_command_topic: /drone/vehicle_command
+    safety_fault_topic: /drone/safety_fault
+    safety_status_topic: /drone/safety_status
+    perception_heartbeat_topic: /drone/perception_heartbeat
+    publish_rate_hz: 5.0
+    geofence_enabled: true
+    geofence_max_distance_m: 10.0
+    geofence_max_altitude_m: 8.0
+    gps_loss_timeout_s: 1.5
+    require_perception_heartbeat: false
+    perception_timeout_s: 2.0
+    perception_max_latency_s: 0.5
+    geofence_action: return_to_home
+    gps_loss_action: land
+    rc_loss_action: return_to_home
+    data_link_loss_action: return_to_home
+    perception_timeout_action: land
+    perception_latency_action: land

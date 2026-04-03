@@ -1,0 +1,29 @@
+{
+  "name": "perception_target_tracking",
+  "objective": "Validar o pipeline de percepcao com camera simulada, tracking e degradacao por perda do feed",
+  "camera": {
+    "topic": "/simulation/camera/image_raw",
+    "frame_rate_hz": 10.0,
+    "frame_width": 640,
+    "frame_height": 360,
+    "target_radius_px": 28
+  },
+  "perception": {
+    "detection_topic": "/drone/perception/detection",
+    "tracked_topic": "/drone/perception/tracked_object",
+    "event_topic": "/drone/perception/event",
+    "heartbeat_topic": "/drone/perception_heartbeat"
+  },
+  "failure_mode": {
+    "type": "perception_timeout",
+    "method": "stop_camera_stream",
+    "timeout_s": 1.5
+  },
+  "expected_outcomes": {
+    "target_detected": true,
+    "tracked_object": true,
+    "perception_event": "track_locked",
+    "safety_rule": "perception_timeout",
+    "safety_action": "land"
+  }
+}

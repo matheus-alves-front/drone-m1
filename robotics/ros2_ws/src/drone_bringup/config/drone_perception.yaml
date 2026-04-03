@@ -1,0 +1,22 @@
+camera_input:
+  ros__parameters:
+    input_topic: /simulation/camera/image_raw
+    output_topic: /drone/perception/preprocessed_image
+    blur_kernel_size: 5
+
+object_detector:
+  ros__parameters:
+    input_topic: /drone/perception/preprocessed_image
+    detection_topic: /drone/perception/detection
+    event_topic: /drone/perception/event
+    detection_label: sim_target
+    min_area_ratio: 0.002
+
+tracker:
+  ros__parameters:
+    detection_topic: /drone/perception/detection
+    tracked_topic: /drone/perception/tracked_object
+    event_topic: /drone/perception/event
+    heartbeat_topic: /drone/perception_heartbeat
+    reacquire_distance_px: 48.0
+    healthy_latency_threshold_s: 0.5

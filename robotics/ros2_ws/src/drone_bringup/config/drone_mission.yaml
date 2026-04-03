@@ -1,0 +1,31 @@
+/**:
+  ros__parameters:
+    backend: ros2_domain
+    scenario_file: simulation/scenarios/patrol_basic.json
+    state_topic: /drone/vehicle_state
+    command_topic: /drone/vehicle_command
+    command_status_topic: /drone/vehicle_command_status
+    perception_event_topic: /drone/perception/event
+    tracked_object_topic: /drone/perception/tracked_object
+    mission_command_topic: /drone/mission_command
+    mission_status_topic: /drone/mission_status
+    publish_rate_hz: 5.0
+    auto_start: false
+    require_track_lock_before_patrol: false
+    track_lock_timeout_s: 20.0
+    takeoff_altitude_m: 3.0
+    takeoff_altitude_tolerance_m: 0.4
+    hover_duration_s: 3.0
+    waypoint_arrival_tolerance_m: 2.0
+    home_arrival_tolerance_m: 2.0
+    arm_timeout_s: 30.0
+    takeoff_timeout_s: 45.0
+    waypoint_timeout_s: 60.0
+    return_home_timeout_s: 60.0
+    landing_timeout_s: 60.0
+    abort_timeout_s: 90.0
+    command_timeout_s: 10.0
+    command_retry_interval_s: 3.0
+    max_command_retries: 5
+    patrol_offsets_north_m: [20.0]
+    patrol_offsets_east_m: [0.0]

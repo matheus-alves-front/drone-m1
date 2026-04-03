@@ -1,0 +1,21 @@
+{
+  "name": "takeoff_land",
+  "objective": "Arm, take off, hold altitude, execute one relative waypoint and land.",
+  "connection": {
+    "system_address": "udp://:14540",
+    "connection_timeout_s": 20.0,
+    "ready_timeout_s": 30.0,
+    "action_timeout_s": 20.0
+  },
+  "flight": {
+    "takeoff_altitude_m": 3.0,
+    "hover_duration_s": 3.0,
+    "waypoint_offset_north_m": 5.0,
+    "waypoint_offset_east_m": 0.0,
+    "arrival_tolerance_m": 2.0,
+    "altitude_tolerance_m": 0.75,
+    "takeoff_timeout_s": 20.0,
+    "waypoint_timeout_s": 20.0,
+    "land_timeout_s": 60.0
+  }
+}

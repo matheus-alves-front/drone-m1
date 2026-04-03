@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    api_base_url: http://127.0.0.1:8080
+    api_timeout_s: 1.0
+    run_id: phase7-default
+    source: telemetry_bridge_node
+    vehicle_state_topic: /drone/vehicle_state
+    vehicle_command_status_topic: /drone/vehicle_command_status
+    mission_status_topic: /drone/mission_status
+    safety_status_topic: /drone/safety_status
+    tracked_object_topic: /drone/perception/tracked_object
+    perception_heartbeat_topic: /drone/perception_heartbeat
+    perception_event_topic: /drone/perception/event

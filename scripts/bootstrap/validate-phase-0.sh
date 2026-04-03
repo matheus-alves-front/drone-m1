@@ -16,7 +16,7 @@ required_files=(
   "docs/TESTING-AND-FAILURE-MODEL.md"
   "docs/CHECKLIST-FRAMEWORK.md"
   "docs/PROJECT-EXECUTION-CHECKLIST.md"
-  "docs/PHASE-0-OPEN-DECISIONS.md"
+  "docs/decisions/PHASE-0-OPEN-DECISIONS.md"
   ".github/workflows/bootstrap-check.yml"
   ".devcontainer/devcontainer.json"
   "robotics/ros2_ws/README.md"
@@ -104,8 +104,8 @@ if ! grep -q 'scripts/bootstrap/validate-phase-0.sh' .github/workflows/bootstrap
   exit 1
 fi
 
-if ! grep -q 'docs/PHASE-0-OPEN-DECISIONS.md' docs/PROJECT-EXECUTION-CHECKLIST.md; then
-  echo 'Checklist does not reference docs/PHASE-0-OPEN-DECISIONS.md' >&2
+if ! grep -q 'docs/decisions/PHASE-0-OPEN-DECISIONS.md' docs/PROJECT-EXECUTION-CHECKLIST.md; then
+  echo 'Checklist does not reference docs/decisions/PHASE-0-OPEN-DECISIONS.md' >&2
   exit 1
 fi
 

@@ -1,0 +1,13 @@
+builtin_interfaces/Time stamp
+string mission_id
+string phase
+bool active
+bool completed
+bool aborted
+bool failed
+bool terminal
+bool succeeded
+string detail
+uint32 current_waypoint_index
+uint32 total_waypoints
+string last_command
