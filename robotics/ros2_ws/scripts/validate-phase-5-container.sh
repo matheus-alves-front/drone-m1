@@ -103,7 +103,7 @@ dump_logs() {
 start_stack() {
   local case_log_dir="$1"
 
-  if ! MICRO_XRCE_AGENT_BIN="$AGENT_BIN" MICRO_XRCE_AGENT_LD_LIBRARY_PATH="$AGENT_LD_LIBRARY_PATH" PX4_SITL_MAKE_ARGS="-j$PX4_BUILD_JOBS" PHASE1_GZ_DISTRO=harmonic PHASE1_GZ_PARTITION="phase5-container-runtime" PHASE1_RUNTIME_DIR=$CONTAINER_RUNTIME_DIR PHASE1_LOG_DIR=$case_log_dir bash scripts/sim/start.sh; then
+  if ! MICRO_XRCE_AGENT_BIN="$AGENT_BIN" MICRO_XRCE_AGENT_LD_LIBRARY_PATH="$AGENT_LD_LIBRARY_PATH" PHASE1_PYTHON_BIN=python3 PX4_SITL_MAKE_ARGS="-j$PX4_BUILD_JOBS" PHASE1_GZ_DISTRO=harmonic PHASE1_GZ_PARTITION="phase5-container-runtime" PHASE1_RUNTIME_DIR=$CONTAINER_RUNTIME_DIR PHASE1_LOG_DIR=$case_log_dir bash scripts/sim/start.sh; then
     dump_logs
     return 1
   fi

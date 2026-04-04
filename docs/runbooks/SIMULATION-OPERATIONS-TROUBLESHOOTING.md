@@ -61,6 +61,73 @@ Concentrar a trilha operacional e os principais procedimentos de troubleshooting
 - Acao:
   - executar primeiro `bash scripts/sim/validate-phase-1-container.sh`
   - confirmar cache em `.cache/phase-1/micro-xrce-agent/`
+  - se o `PATH` local nao tiver `MicroXRCEAgent`, o `scripts/sim/start.sh` agora tenta reutilizar automaticamente:
+    - `.cache/phase-1/micro-xrce-agent/install/bin/MicroXRCEAgent`
+    - `.cache/phase-1/micro-xrce-agent/build/MicroXRCEAgent`
+  - para forcar manualmente:
+    - `MICRO_XRCE_AGENT_BIN="$PWD/.cache/phase-1/micro-xrce-agent/build/MicroXRCEAgent" bash scripts/sim/start.sh`
+
+### PX4 SITL para no configure com `kconfiglib` ou `menuconfig`
+
+- Sintoma:
+  - `ModuleNotFoundError: No module named 'menuconfig'`
+  - `kconfiglib is not installed or not in PATH`
+- Acao:
+  - criar uma virtualenv local no repositorio:
+    - `python3 -m venv .venv`
+    - `. .venv/bin/activate`
+    - `python -m pip install --upgrade pip`
+    - `python -m pip install -r third_party/PX4-Autopilot/Tools/setup/requirements.txt`
+  - confirmar:
+    - `.venv/bin/python -c "import kconfiglib; print('ok')"`
+  - o `scripts/sim/start.sh` tenta usar `.venv/bin/python` automaticamente quando ela existe
+
+### PX4 SITL para no build com `em.RAW_OPT`, `jinja2` ou `jsonschema`
+
+- Sintoma:
+  - `AttributeError: module 'em' has no attribute 'RAW_OPT'`
+  - `No module named 'jinja2'`
+  - `No module named 'jsonschema'`
+- Causa provavel:
+  - a `.venv` tem `empy 4.x` ou esta fora do conjunto esperado pelo `Tools/setup/requirements.txt` do PX4
+- Acao:
+  - com a `.venv` ativada:
+    - `python -m pip install --upgrade pip`
+    - `python -m pip install -r third_party/PX4-Autopilot/Tools/setup/requirements.txt`
+  - confirmar:
+    - `.venv/bin/python - <<'PY'\nimport em, jinja2, jsonschema\nprint(hasattr(em, 'RAW_OPT'))\nPY`
+
+### PX4 SITL para no configure com `OpenCVConfig.cmake`
+
+- Sintoma:
+  - `Could not find a package configuration file provided by "OpenCV"`
+  - `OpenCVConfig.cmake` ou `opencv-config.cmake` ausente
+- Acao:
+  - instalar os headers e arquivos de CMake do OpenCV:
+    - `sudo apt-get install -y libopencv-dev`
+  - confirmar:
+    - `pkg-config --modversion opencv4`
+  - repetir:
+    - `bash scripts/sim/stop.sh`
+    - `PHASE1_HEADLESS=0 bash scripts/sim/start.sh`
+
+### Gazebo sobe sem camera GStreamer ou mostra erro `libGstCameraSystem.so`
+
+- Sintoma:
+  - `Failed to load system plugin [libGstCameraSystem.so]`
+  - camera simulada nao funciona ou recursos visuais ligados a camera falham
+- Causa provavel:
+  - o plugin custom do PX4 nao foi compilado porque faltam headers de desenvolvimento do GStreamer
+- Acao:
+  - instalar:
+    - `sudo apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
+  - confirmar:
+    - `pkg-config --modversion gstreamer-1.0`
+    - `pkg-config --modversion gstreamer-app-1.0`
+  - limpar e subir de novo:
+    - `bash scripts/sim/stop.sh`
+    - `rm -rf third_party/PX4-Autopilot/build/px4_sitl_default`
+    - `PHASE1_HEADLESS=0 bash scripts/sim/start.sh`
 
 ### `patrol_basic` aborta antes da missao
 

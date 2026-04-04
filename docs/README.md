@@ -28,6 +28,8 @@ Os documentos abaixo ficam na raiz de `docs/` porque definem escopo, arquitetura
 
 `docs/runbooks/` concentra ordem operacional, troubleshooting e guias de execucao.
 
+- `LOCAL-SIMULATION-GUIDE.md` e o ponto de entrada para instalar o ambiente local e operar o projeto manualmente
+
 ## Reference
 
 `docs/reference/` concentra material de consulta, inventarios e notas auxiliares que nao fazem parte do escopo geral obrigatorio.

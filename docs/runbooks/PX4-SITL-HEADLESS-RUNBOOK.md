@@ -20,6 +20,12 @@ bash scripts/sim/start.sh
 
 O `start.sh` injeta uma `GZ_PARTITION` estavel por padrao para evitar falhas de discovery entre processos `gz` em runtime containerizado.
 
+Para abrir o Gazebo com GUI no ambiente local:
+
+```bash
+PHASE1_HEADLESS=0 bash scripts/sim/start.sh
+```
+
 Parada recomendada:
 
 ```bash

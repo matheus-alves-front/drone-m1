@@ -87,6 +87,18 @@ Validação real da Fase 5 em ambiente Humble/Jammy:
 bash robotics/ros2_ws/scripts/validate-phase-5-container.sh
 ```
 
+Guia completo para instalar o ambiente local, abrir o Gazebo e operar o projeto manualmente:
+
+```bash
+less docs/runbooks/LOCAL-SIMULATION-GUIDE.md
+```
+
+Atalho direto para abrir a simulacao com Gazebo GUI no ambiente local:
+
+```bash
+PHASE1_HEADLESS=0 bash scripts/sim/start.sh
+```
+
 Teste automatizado do bootstrap:
 
 ```bash

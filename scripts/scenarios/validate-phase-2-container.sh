@@ -109,7 +109,7 @@ echo '[phase2-container] resetting PX4 SITL build directory'
 rm -rf third_party/PX4-Autopilot/build/px4_sitl_default
 
 echo '[phase2-container] starting Phase 1 stack for MAVSDK scenario execution'
-if ! MICRO_XRCE_AGENT_BIN="$CONTAINER_AGENT_INSTALL_DIR/bin/MicroXRCEAgent" MICRO_XRCE_AGENT_LD_LIBRARY_PATH="$CONTAINER_AGENT_INSTALL_DIR/lib" PX4_SITL_MAKE_ARGS="-j$PX4_BUILD_JOBS" PHASE1_GZ_DISTRO=harmonic PHASE1_GZ_PARTITION="phase2-container-runtime" PHASE1_RUNTIME_DIR=$CONTAINER_RUNTIME_DIR PHASE1_LOG_DIR=$CONTAINER_LOG_DIR bash scripts/sim/start.sh; then
+if ! MICRO_XRCE_AGENT_BIN="$CONTAINER_AGENT_INSTALL_DIR/bin/MicroXRCEAgent" MICRO_XRCE_AGENT_LD_LIBRARY_PATH="$CONTAINER_AGENT_INSTALL_DIR/lib" PHASE1_PYTHON_BIN=python3 PX4_SITL_MAKE_ARGS="-j$PX4_BUILD_JOBS" PHASE1_GZ_DISTRO=harmonic PHASE1_GZ_PARTITION="phase2-container-runtime" PHASE1_RUNTIME_DIR=$CONTAINER_RUNTIME_DIR PHASE1_LOG_DIR=$CONTAINER_LOG_DIR bash scripts/sim/start.sh; then
   dump_logs
   exit 1
 fi
