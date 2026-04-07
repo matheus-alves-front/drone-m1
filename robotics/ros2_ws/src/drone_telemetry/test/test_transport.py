@@ -35,6 +35,7 @@ class TestTelemetryTransport(unittest.TestCase):
             publisher.submit(
                 TelemetryEnvelope(
                     run_id="run-1",
+                    session_id="session-1",
                     source="telemetry_bridge",
                     kind="vehicle_state",
                     topic="/drone/vehicle_state",
@@ -61,6 +62,7 @@ class TestTelemetryTransport(unittest.TestCase):
             publisher.submit(
                 TelemetryEnvelope(
                     run_id="run-backend-loss",
+                    session_id=None,
                     source="telemetry_bridge",
                     kind="mission_status",
                     topic="/drone/mission_status",

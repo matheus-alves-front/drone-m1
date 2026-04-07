@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: drone-scenarios
+Version: 0.1.0
+Summary: Reusable MAVSDK scenario runner for the drone simulation-first monorepo
+Requires-Python: >=3.10
+Provides-Extra: mavsdk
+Requires-Dist: mavsdk; extra == "mavsdk"
+Provides-Extra: test
+Requires-Dist: pytest<9,>=8; extra == "test"

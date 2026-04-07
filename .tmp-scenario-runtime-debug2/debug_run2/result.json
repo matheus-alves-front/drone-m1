@@ -1,0 +1,51 @@
+{
+  "scenario_name": "takeoff_land",
+  "scenario_path": "/home/matheusalves/Dev/random/drone-sim-complete/simulation/scenarios/takeoff_land.json",
+  "status": "completed",
+  "system_address": "udp://:14540",
+  "assertions": [
+    {
+      "name": "connection_ready",
+      "success": true,
+      "detail": "vehicle discovered at -22.998503,-43.365876"
+    },
+    {
+      "name": "arm",
+      "success": true,
+      "detail": "vehicle armed successfully"
+    },
+    {
+      "name": "takeoff",
+      "success": true,
+      "detail": "relative altitude reached 3.00 m"
+    },
+    {
+      "name": "hover",
+      "success": true,
+      "detail": "hover maintained at 3.00 m for 3.0 s"
+    },
+    {
+      "name": "waypoint",
+      "success": true,
+      "detail": "waypoint reached within 0.00 m of target"
+    },
+    {
+      "name": "land",
+      "success": true,
+      "detail": "vehicle landed and left in-air state"
+    }
+  ],
+  "detail": "scenario completed successfully",
+  "target_position": {
+    "latitude_deg": -22.99845828423579,
+    "longitude_deg": -43.3658758,
+    "absolute_altitude_m": 103.0,
+    "relative_altitude_m": 3.0
+  },
+  "final_position": {
+    "latitude_deg": -22.99845828423579,
+    "longitude_deg": -43.3658758,
+    "absolute_altitude_m": 100.0,
+    "relative_altitude_m": 0.0
+  }
+}

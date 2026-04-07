@@ -4,5 +4,8 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts"
+  "types": "./src/index.ts",
+  "scripts": {
+    "test:contracts": "node --experimental-strip-types --test tests/control-plane.test.ts"
+  }
 }

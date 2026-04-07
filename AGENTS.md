@@ -1,69 +1,85 @@
 # AGENTS.md
 
-## Objetivo do repositório
+## Objetivo desta fase
 
-Este repositório existe para construir um stack completo de autonomia de drone **100% em simulação**, usando:
+O repositório entrou em um ciclo de **refatoração orientada a produto/control plane**.
 
-- PX4 SITL
-- Gazebo
-- ROS 2
-- MAVSDK
-- OpenCV
-- backend/dashboard para observabilidade
+O objetivo já não é apenas manter um stack simulation-first tecnicamente correto.  
+O objetivo agora é transformar o projeto em uma **plataforma controladora unificada do drone**, com uma superfície humana forte e uma superfície programática coerente, sem quebrar a futura evolução para uma plataforma robótica modular mais ampla.
 
-O objetivo atual **não** é operar hardware real. Toda implementação deve assumir **simulation-first**.
+## Leitura obrigatória antes de qualquer mudança
 
-## Ordem de leitura obrigatória antes de qualquer mudança
-
-1. `docs/PROJECT-SCOPE.md`
-2. `docs/SIMULATION-ARCHITECTURE.md`
-3. `docs/PROJECT-ARCHITECTURE.md`
-4. `docs/MONOREPO-STRUCTURE.md`
-5. `docs/DEVELOPMENT-STANDARDS.md`
-6. `docs/TESTING-AND-FAILURE-MODEL.md`
-7. `docs/CHECKLIST-FRAMEWORK.md`
+1. `docs/v2/README.md`
+2. `docs/v2/REFACTOR-PRINCIPLES.md`
+3. `docs/v2/REFACTOR-TERMINOLOGY.md`
+4. `docs/v2/MARK1-TO-MARK2-COMPATIBILITY-RULES.md`
+5. `docs/v2/IMPLEMENTATION-ROTEIRO.md`
+6. `docs/v2/mark1/MARK1-SCOPE.md`
+7. `docs/v2/mark1/MARK1-REQUIREMENTS.md`
+8. `docs/v2/mark1/MARK1-SOFTWARE-ARCHITECTURE.md`
+9. `docs/v2/mark1/MARK1-CONTROL-PLANE-ARCHITECTURE.md`
+10. `docs/v2/mark1/MARK1-DOMAIN-MODEL.md`
+11. `docs/v2/mark1/MARK1-ACTION-AND-CAPABILITY-CONTRACTS.md`
+12. `docs/v2/mark1/MARK1-IMPLEMENTATION-CHECKLIST.md`
+13. `docs/v2/mark2/MARK2-VISION.md`
+14. `docs/v2/mark2/MARK2-SOFTWARE-ARCHITECTURE.md`
 
 ## Regras globais
 
-1. Não tratar o projeto como um script único; tratar como sistema distribuído de robótica.
-2. PX4 é o dono do voo.
-3. ROS 2 é o middleware principal.
-4. MAVSDK é a camada principal para cenários e controle programático de alto nível.
-5. O simulador é ambiente externo; o monorepo o orquestra.
-6. Toda feature relevante deve ter documentação, testes e critério de aceite.
-7. Nenhum agente pode declarar prontidão para hardware real.
-8. Nenhum agente pode tomar decisões de safety crítica sem revisão humana.
-9. Não misturar regras de missão com dashboard.
-10. Não misturar lógica de safety com lógica de missão no mesmo módulo, salvo justificativa explícita.
+### 1. O escopo não pode ser simplificado
+- Não reduza o projeto para um dashboard read-only.
+- Não reduza o projeto para scripts soltos.
+- Não esconda ações de produto em tópicos ROS 2 crus.
+- Não acople a interface humana diretamente a MAVSDK ou PX4.
 
-## Padrão mínimo de entrega
+### 2. Mark 1 e Mark 2 devem ser respeitados
+- Mark 1 é o alvo de implementação agora.
+- Mark 2 é o alvo de compatibilidade futura.
+- Não implemente Mark 2 inteiro durante o Mark 1.
+- Não quebre a compatibilidade do Mark 1 com o Mark 2.
 
-Toda entrega deve conter:
+### 3. O Control Plane é a peça central
+Toda nova ação de produto deve tender a passar por uma superfície unificada de control plane.
 
-- arquivos alterados
-- resumo do que foi implementado
-- comandos de validação
-- limitações conhecidas
-- atualização documental, se a mudança afetar arquitetura/fluxo/testes
+### 4. Safety continua soberano
+- Safety não depende da IA.
+- Safety não mora no frontend.
+- Safety não pode ser bypassado por conveniência.
 
-## Estrutura operacional esperada
+### 5. Observabilidade e controle são camadas separadas
+- Telemetry/Read Model não deve virar comando.
+- Control API não deve virar dump de estado.
 
-- `docs/`
-- `.agents/`
-- `.codex/skills/`
-- `robotics/`
-- `simulation/`
-- `scripts/`
-- `services/`
-- `apps/`
+### 6. A UI não é dona da lógica
+O frontend coordena intenção humana, mas não carrega a regra central de missão, safety ou execução.
 
-## Delegação
+### 7. LLM/IA não fala diretamente com PX4
+A futura camada MCP/IA deve falar com actions/capabilities do control plane, nunca diretamente com PX4, MAVSDK cru ou ROS 2 topic cru.
 
-Use os subagentes em `.agents/` e as skills em `.codex/skills/` quando o trabalho for especializado.
+## Formato mínimo de toda entrega
 
-## Proibições
+Toda entrega deve incluir:
 
-- não inventar nova arquitetura sem alinhar com `docs/PROJECT-ARCHITECTURE.md`
-- não alterar paths fora do escopo do subagente sem justificar
-- não omitir testes quando a lógica tiver comportamento verificável
-- não introduzir dependências pesadas sem necessidade
+1. resumo do objetivo da mudança
+2. arquivos alterados
+3. decisões tomadas
+4. comandos de validação
+5. limitações conhecidas
+6. impacto em compatibilidade Mark 1 → Mark 2
+7. atualização documental quando aplicável
+
+## Quando dividir em subagentes
+
+Use `.agents/` quando houver:
+- múltiplas bounded contexts
+- risco de conflito entre arquivos
+- necessidade de isolamento de responsabilidade
+- validações por fase diferentes
+
+## Regra de aceite
+
+Nenhuma fase é considerada concluída se faltar:
+- validação
+- atualização de docs
+- explicitação de impacto no control plane
+- explicitação de compatibilidade com Mark 2

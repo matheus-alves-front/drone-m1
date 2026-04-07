@@ -1,0 +1,2 @@
+[console_scripts]
+control-api = control_api.main:main

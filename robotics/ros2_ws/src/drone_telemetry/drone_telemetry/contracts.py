@@ -7,6 +7,7 @@ from typing import Any
 @dataclass(slots=True)
 class TelemetryEnvelope:
     run_id: str
+    session_id: str | None
     source: str
     kind: str
     topic: str

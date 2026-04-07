@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: drone-control-api
+Version: 0.1.0
+Summary: Mark 1 control plane HTTP skeleton for the drone platform
+Requires-Python: >=3.10
+Requires-Dist: fastapi<1,>=0.115
+Requires-Dist: uvicorn<1,>=0.30
+Requires-Dist: httpx<1,>=0.27
+Provides-Extra: test
+Requires-Dist: pytest<9,>=8; extra == "test"

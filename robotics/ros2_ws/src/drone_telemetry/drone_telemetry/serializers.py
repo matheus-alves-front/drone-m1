@@ -12,6 +12,7 @@ def stamp_to_ns(stamp: Any) -> int:
 def build_envelope(
     *,
     run_id: str,
+    session_id: str | None,
     source: str,
     kind: str,
     topic: str,
@@ -20,6 +21,7 @@ def build_envelope(
 ) -> TelemetryEnvelope:
     return TelemetryEnvelope(
         run_id=run_id,
+        session_id=session_id,
         source=source,
         kind=kind,
         topic=topic,

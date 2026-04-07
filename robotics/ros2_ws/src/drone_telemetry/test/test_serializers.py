@@ -46,6 +46,7 @@ class TestTelemetrySerializers(unittest.TestCase):
 
         envelope = build_envelope(
             run_id="run-a",
+            session_id="session-a",
             source="telemetry_bridge",
             kind="mission_status",
             topic="/drone/mission_status",
@@ -54,6 +55,7 @@ class TestTelemetrySerializers(unittest.TestCase):
         )
 
         self.assertEqual(envelope.stamp_ns, 10_000_000_020)
+        self.assertEqual(envelope.session_id, "session-a")
         self.assertEqual(envelope.payload["phase"], "hover")
 
 

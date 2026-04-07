@@ -35,6 +35,7 @@ class TelemetryBridgeNode(Node):
         self.declare_parameter("api_base_url", "http://127.0.0.1:8080")
         self.declare_parameter("api_timeout_s", 1.0)
         self.declare_parameter("run_id", "phase7-default")
+        self.declare_parameter("session_id", "")
         self.declare_parameter("source", "telemetry_bridge_node")
         self.declare_parameter("vehicle_state_topic", "/drone/vehicle_state")
         self.declare_parameter("vehicle_command_status_topic", "/drone/vehicle_command_status")
@@ -45,6 +46,8 @@ class TelemetryBridgeNode(Node):
         self.declare_parameter("perception_event_topic", "/drone/perception/event")
 
         self._run_id = str(self.get_parameter("run_id").value)
+        session_id = str(self.get_parameter("session_id").value).strip()
+        self._session_id = session_id or None
         self._source = str(self.get_parameter("source").value)
         client = TelemetryApiClient(
             str(self.get_parameter("api_base_url").value),
@@ -118,6 +121,7 @@ class TelemetryBridgeNode(Node):
     def _forward_message(self, msg, *, kind: str, topic: str, serializer) -> None:
         envelope = build_envelope(
             run_id=self._run_id,
+            session_id=self._session_id,
             source=self._source,
             kind=kind,
             topic=topic,

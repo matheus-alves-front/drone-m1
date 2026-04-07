@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 
 from .models import TelemetryEnvelopeIn
-from .store import TelemetryStore
+from .store import SessionNotFoundError, TelemetryStore
 
 
 class WebsocketHub:
@@ -43,20 +43,6 @@ def create_app(data_root: Path | None = None, *, storage_root: Path | None = Non
     app.state.hub = hub
     app.state.legacy_hub = legacy_hub
 
-    def session_snapshot(run_id: str) -> dict:
-        snapshot = store.snapshot().model_dump()["latest_by_kind"]
-        return {
-            kind: envelope["payload"]
-            for kind, envelope in snapshot.items()
-            if envelope["run_id"] == run_id
-        }
-
-    def session_metrics(run_id: str) -> list[dict]:
-        counts: dict[str, int] = {}
-        for event in store.replay(run_id, limit=5000):
-            counts[event.kind] = counts.get(event.kind, 0) + 1
-        return [{"kind": kind, "count": count} for kind, count in sorted(counts.items())]
-
     @app.get("/api/v1/health")
     async def health() -> dict:
         return {"status": "ok"}
@@ -68,8 +54,8 @@ def create_app(data_root: Path | None = None, *, storage_root: Path | None = Non
         await legacy_hub.broadcast(
             {
                 "type": "telemetry_update",
-                "session": {"run_id": stored.run_id},
-                "snapshot": session_snapshot(stored.run_id),
+                "session": store.get_session(stored.run_id).model_dump(),
+                "snapshot": store.session_snapshot(stored.run_id).model_dump(),
             }
         )
         return {"status": "accepted", "sequence": stored.sequence}
@@ -83,8 +69,15 @@ def create_app(data_root: Path | None = None, *, storage_root: Path | None = Non
         return store.metrics().model_dump()
 
     @app.get("/api/v1/events")
-    async def events(limit: int = 100, run_id: str | None = None) -> list[dict]:
-        return [event.model_dump() for event in store.recent_events(limit=max(1, min(limit, 1000)), run_id=run_id)]
+    async def events(
+        limit: int = Query(default=100, ge=1, le=1000),
+        run_id: str | None = None,
+        kind: str | None = None,
+    ) -> list[dict]:
+        return [
+            event.model_dump()
+            for event in store.recent_events(limit=limit, run_id=run_id, kind=kind)
+        ]
 
     @app.get("/api/v1/runs")
     async def runs() -> list[dict]:
@@ -94,20 +87,51 @@ def create_app(data_root: Path | None = None, *, storage_root: Path | None = Non
     async def replay(run_id: str, limit: int = 500) -> list[dict]:
         return [event.model_dump() for event in store.replay(run_id, limit=max(1, min(limit, 5000)))]
 
+    @app.get("/api/v1/sessions")
+    async def sessions() -> list[dict]:
+        return [item.model_dump() for item in store.list_runs()]
+
     @app.get("/api/v1/sessions/current")
     async def current_session() -> dict:
-        return {"run_id": store.snapshot().current_run_id}
+        try:
+            return store.current_session().model_dump()
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/v1/sessions/{run_id}")
+    async def session(run_id: str) -> dict:
+        try:
+            return store.get_session(run_id).model_dump()
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.get("/api/v1/sessions/{run_id}/snapshot")
-    async def session_snapshot_endpoint(run_id: str) -> dict:
-        return session_snapshot(run_id)
+    async def session_snapshot(run_id: str) -> dict:
+        try:
+            return store.session_snapshot(run_id).model_dump()
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/v1/sessions/{run_id}/events")
+    async def session_events(run_id: str, limit: int = Query(default=200, ge=1, le=5000)) -> list[dict]:
+        try:
+            return [item.model_dump() for item in store.recent_events(limit=limit, run_id=run_id)]
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/v1/sessions/{run_id}/metrics")
+    async def session_metrics(run_id: str, limit: int = Query(default=200, ge=1, le=5000)) -> list[dict]:
+        try:
+            return [item.model_dump() for item in store.session_metrics(run_id, limit=limit)]
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.get("/api/v1/sessions/{run_id}/replay")
     async def session_replay(run_id: str) -> dict:
-        return {
-            "events": [event.model_dump() for event in store.replay(run_id, limit=5000)],
-            "metrics": session_metrics(run_id),
-        }
+        try:
+            return store.session_replay(run_id).model_dump()
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.websocket("/ws/telemetry")
     async def telemetry_socket(websocket: WebSocket) -> None:
@@ -124,6 +148,17 @@ def create_app(data_root: Path | None = None, *, storage_root: Path | None = Non
     @app.websocket("/ws/telemetry/current")
     async def telemetry_current_socket(websocket: WebSocket) -> None:
         await legacy_hub.connect(websocket)
+        try:
+            session = store.current_session()
+            await websocket.send_json(
+                {
+                    "type": "telemetry_update",
+                    "session": session.model_dump(),
+                    "snapshot": store.session_snapshot(session.run_id).model_dump(),
+                }
+            )
+        except SessionNotFoundError:
+            pass
         try:
             while True:
                 await asyncio.sleep(30.0)

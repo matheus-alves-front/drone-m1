@@ -1,23 +1,54 @@
-import type { MetricsResponse } from "../types";
+import type { MetricRecord } from "../types";
 
 type MetricsPanelProps = {
-  metrics: MetricsResponse;
+  metrics: MetricRecord[];
 };
 
+function metricValue(value: number | string | boolean | null | undefined, suffix = ""): string {
+  if (value === null || value === undefined || value === "") {
+    return "n/a";
+  }
+  if (typeof value === "number") {
+    return `${value.toFixed(2)}${suffix}`;
+  }
+  return `${String(value)}${suffix}`;
+}
+
 export function MetricsPanel({ metrics }: MetricsPanelProps) {
+  const latest = metrics[metrics.length - 1] ?? null;
+
   return (
     <section className="event-feed">
       <div className="event-feed__header">
-        <h2>Metrics</h2>
-        <span>{metrics.total_events} total envelopes</span>
+        <h2>Metric samples</h2>
+        <span>{metrics.length} samples in view</span>
       </div>
-      <ul>
-        {Object.entries(metrics.counts_by_kind).map(([kind, count]) => (
-          <li key={kind}>
-            {kind}: {count}
+      {latest ? (
+        <ul>
+          <li>
+            <strong>Mission phase</strong>
+            <span>{latest.mission_phase || "n/a"}</span>
           </li>
-        ))}
-      </ul>
+          <li>
+            <strong>Altitude</strong>
+            <span>{metricValue(latest.altitude_m, " m")}</span>
+          </li>
+          <li>
+            <strong>Relative altitude</strong>
+            <span>{metricValue(latest.relative_altitude_m, " m")}</span>
+          </li>
+          <li>
+            <strong>Perception latency</strong>
+            <span>{metricValue(latest.perception_latency_s, " s")}</span>
+          </li>
+          <li>
+            <strong>Safety action</strong>
+            <span>{latest.safety_action || "n/a"}</span>
+          </li>
+        </ul>
+      ) : (
+        <div className="replay-panel__empty">No metric samples captured for the selected run.</div>
+      )}
     </section>
   );
 }

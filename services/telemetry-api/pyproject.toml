@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drone-telemetry-api"
+version = "0.2.0"
+description = "Mark 1 telemetry and read-model service for the Drone Control Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "uvicorn>=0.32,<1.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "httpx>=0.28,<1.0",
+  "pytest>=8.3,<9.0",
+]
+
+[project.scripts]
+telemetry-api = "telemetry_api.main:main"
+
+[tool.setuptools]
+packages = ["telemetry_api"]

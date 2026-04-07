@@ -8,6 +8,7 @@ from telemetry_api.main import create_app
 def build_envelope(**overrides):
     payload = {
         "run_id": "run-123",
+        "session_id": "session-123",
         "source": "telemetry_bridge_node",
         "kind": "mission_status",
         "topic": "/drone/mission_status",
@@ -41,13 +42,27 @@ def test_ingest_creates_current_session_snapshot_and_replay(tmp_path):
     current = client.get("/api/v1/sessions/current")
     assert current.status_code == 200
     assert current.json()["run_id"] == "run-123"
+    assert current.json()["session_id"] == "session-123"
+
+    sessions = client.get("/api/v1/sessions")
+    assert sessions.status_code == 200
+    assert sessions.json()[0]["run_id"] == "run-123"
 
     snapshot = client.get("/api/v1/sessions/run-123/snapshot")
     assert snapshot.status_code == 200
     assert snapshot.json()["mission_status"]["phase"] == "patrol"
 
+    events = client.get("/api/v1/sessions/run-123/events")
+    assert events.status_code == 200
+    assert events.json()[0]["kind"] == "mission_status"
+
+    metrics = client.get("/api/v1/sessions/run-123/metrics")
+    assert metrics.status_code == 200
+    assert metrics.json()[0]["mission_phase"] == "patrol"
+
     replay = client.get("/api/v1/sessions/run-123/replay")
     assert replay.status_code == 200
+    assert replay.json()["run_id"] == "run-123"
     assert len(replay.json()["events"]) == 1
     assert len(replay.json()["metrics"]) == 1
 

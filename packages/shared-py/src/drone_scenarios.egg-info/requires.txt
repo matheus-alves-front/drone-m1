@@ -1,0 +1,6 @@
+
+[mavsdk]
+mavsdk
+
+[test]
+pytest<9,>=8
