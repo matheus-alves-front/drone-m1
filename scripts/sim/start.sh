@@ -94,6 +94,10 @@ resolve_xrce_agent_defaults() {
   local cached_build_bin="$ROOT_DIR/.cache/phase-1/micro-xrce-agent/build/MicroXRCEAgent"
 
   if [[ -n "${MICRO_XRCE_AGENT_BIN:-}" ]]; then
+    XRCE_AGENT_BIN="${MICRO_XRCE_AGENT_BIN}"
+    if [[ -z "$XRCE_AGENT_LD_LIBRARY_PATH" && "$XRCE_AGENT_BIN" == "$cached_install_bin" && -d "$cached_install_lib" ]]; then
+      XRCE_AGENT_LD_LIBRARY_PATH="$cached_install_lib"
+    fi
     return 0
   fi
 
