@@ -242,8 +242,15 @@ install_dashboard_dependencies() {
   npm install --prefix "$ROOT_DIR/apps/dashboard" --no-fund --no-audit
 }
 
+xrce_agent_cache_is_complete() {
+  [[ -x "$AGENT_INSTALL_DIR/bin/MicroXRCEAgent" ]] || return 1
+  [[ -f "$AGENT_INSTALL_DIR/lib/libfastrtps.so.2.14.6" ]] || return 1
+  [[ -f "$AGENT_INSTALL_DIR/lib/libfastcdr.so.2.2.7" ]] || return 1
+  [[ -f "$AGENT_INSTALL_DIR/lib/libmicroxrcedds_agent.so.2.4.3" ]] || return 1
+}
+
 build_micro_xrce_agent_cache() {
-  if [[ -x "$AGENT_INSTALL_DIR/bin/MicroXRCEAgent" ]]; then
+  if xrce_agent_cache_is_complete; then
     log "Micro XRCE-DDS Agent cache already present"
     return
   fi
