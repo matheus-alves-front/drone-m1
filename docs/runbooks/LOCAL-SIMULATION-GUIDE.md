@@ -144,6 +144,7 @@ sudo apt-get install -y \
   libunwind-dev \
   libxml2-utils \
   protobuf-compiler
+  python3-opencv
 ```
 
 ## Preparacao do repositório
@@ -418,6 +419,12 @@ Publicar feed sintetico:
 
 ```bash
 python3 robotics/ros2_ws/scripts/publish_sim_camera_stream.py
+```
+
+Se esse comando falhar com `ModuleNotFoundError: No module named 'cv2'`, instale o binding Python do OpenCV no baseline:
+
+```bash
+sudo apt-get install -y python3-opencv
 ```
 
 Observar:

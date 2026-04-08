@@ -12,7 +12,6 @@ from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
 from drone_perception.contracts import CameraConfig
-from drone_perception.frame_generator import generate_frame
 
 
 class SimCameraPublisher(Node):
@@ -29,6 +28,18 @@ class SimCameraPublisher(Node):
         frame_id: str,
     ) -> None:
         super().__init__("sim_camera_publisher")
+        try:
+            from drone_perception.frame_generator import generate_frame
+        except ModuleNotFoundError as exc:
+            missing_name = getattr(exc, "name", "")
+            if missing_name == "cv2":
+                raise SystemExit(
+                    "publish_sim_camera_stream.py requires the system OpenCV Python bindings. "
+                    "Install them with: sudo apt-get install -y python3-opencv"
+                ) from exc
+            raise
+
+        self._generate_frame = generate_frame
         self._config = CameraConfig(
             frame_width=frame_width,
             frame_height=frame_height,
@@ -49,7 +60,7 @@ class SimCameraPublisher(Node):
 
     def _publish_frame(self) -> None:
         elapsed_s = time.monotonic() - self._start_monotonic_s
-        frame = generate_frame(self._config, elapsed_s)
+        frame = self._generate_frame(self._config, elapsed_s)
         msg = Image()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = self._config.frame_id

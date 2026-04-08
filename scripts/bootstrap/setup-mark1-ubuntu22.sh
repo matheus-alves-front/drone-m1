@@ -110,6 +110,7 @@ install_base_apt_packages() {
     ninja-build \
     pkg-config \
     protobuf-compiler \
+    python3-opencv \
     rsync \
     software-properties-common \
     wget
