@@ -189,7 +189,7 @@ export function App() {
         nextRuns.current_telemetry_run_id ||
         nextSnapshot.current_run_id ||
         nextSnapshot.run_id ||
-        nextRuns.runs[0]?.run_id ||
+        nextRuns.telemetry_runs[0]?.run_id ||
         "";
 
       const [nextMetrics, nextEvents, nextReplay] = nextRunId

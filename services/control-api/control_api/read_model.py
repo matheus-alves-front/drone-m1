@@ -41,8 +41,9 @@ class HttpReadModelAdapter:
         effective_run_id = run_id or await self._current_run_id()
         if effective_run_id is None:
             return {"run_id": None, "metrics": [], "source": "telemetry_api"}
-        metrics = await self._get_json(
+        metrics = await self._get_json_or_default(
             f"/api/v1/sessions/{effective_run_id}/metrics",
+            default=[],
             params={"limit": max(1, min(limit, 5000))},
         )
         return {
@@ -63,7 +64,7 @@ class HttpReadModelAdapter:
             params["run_id"] = run_id
         if kind:
             params["kind"] = kind
-        events = await self._get_json("/api/v1/events", params=params)
+        events = await self._get_json_or_default("/api/v1/events", default=[], params=params)
         return {
             "run_id": run_id,
             "events": events,
@@ -71,8 +72,9 @@ class HttpReadModelAdapter:
         }
 
     async def get_replay(self, run_id: str, *, limit: int = 500) -> dict[str, Any]:
-        replay = await self._get_json(
+        replay = await self._get_json_or_default(
             f"/api/v1/sessions/{run_id}/replay",
+            default={"run_id": run_id, "snapshot": {}, "events": [], "metrics": []},
             params={"limit": max(1, min(limit, 5000))},
         )
         if "run_id" not in replay:
@@ -88,6 +90,20 @@ class HttpReadModelAdapter:
     async def _get_json(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get(f"{self._base_url}{path}", params=params)
+            response.raise_for_status()
+            return response.json()
+
+    async def _get_json_or_default(
+        self,
+        path: str,
+        *,
+        default: Any,
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(f"{self._base_url}{path}", params=params)
+            if response.status_code == 404:
+                return default
             response.raise_for_status()
             return response.json()
 

@@ -74,10 +74,13 @@ def create_app(data_root: Path | None = None, *, storage_root: Path | None = Non
         run_id: str | None = None,
         kind: str | None = None,
     ) -> list[dict]:
-        return [
-            event.model_dump()
-            for event in store.recent_events(limit=limit, run_id=run_id, kind=kind)
-        ]
+        try:
+            return [
+                event.model_dump()
+                for event in store.recent_events(limit=limit, run_id=run_id, kind=kind)
+            ]
+        except SessionNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.get("/api/v1/runs")
     async def runs() -> list[dict]:
