@@ -153,7 +153,7 @@ print_plan() {
  cat <<EOF
 Phase 1 startup plan:
 1. Start Micro XRCE-DDS Agent on udp4 port 8888
-2. Build PX4 SITL artifacts deterministically with DONT_RUN=1
+2. Build PX4 SITL artifacts deterministically with px4_sitl_default
 3. Start PX4 SITL + Gazebo Harmonic with GZ_DISTRO=$GZ_DISTRO GZ_PARTITION=$GZ_PARTITION HEADLESS=$HEADLESS_MODE
 4. Track PIDs in $RUNTIME_DIR
 5. Capture logs in $LOG_DIR
@@ -198,8 +198,11 @@ build_px4() {
     env_args+=("HEADLESS=1")
   fi
 
-  printf '[phase1] building PX4 SITL artifacts with DONT_RUN=1\n' >>"$PX4_LOG_FILE"
-  if ! bash -lc "cd \"$PX4_DIR\" && export PATH=\"$python_dir:\$PATH\" && exec env ${env_args[*]} make $PX4_SITL_MAKE_ARGS px4_sitl gz_x500" >>"$PX4_LOG_FILE" 2>&1; then
+  printf '[phase1] building PX4 SITL artifacts with px4_sitl_default\n' >>"$PX4_LOG_FILE"
+  # Gazebo GZ targets do not honor DONT_RUN=1 like gazebo-classic does, so the
+  # build phase must avoid `make px4_sitl gz_x500` or the control-plane start
+  # request hangs waiting on a simulator it later starts explicitly.
+  if ! bash -lc "cd \"$PX4_DIR\" && export PATH=\"$python_dir:\$PATH\" && exec env ${env_args[*]} make $PX4_SITL_MAKE_ARGS px4_sitl_default" >>"$PX4_LOG_FILE" 2>&1; then
     die "PX4 SITL build failed; inspect logs in $LOG_DIR"
   fi
 
