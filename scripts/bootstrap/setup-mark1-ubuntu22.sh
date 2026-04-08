@@ -92,11 +92,18 @@ install_base_apt_packages() {
 }
 
 ensure_deadsnakes_python() {
-  if command -v "python${PYTHON_VERSION}" >/dev/null 2>&1; then
+  local python_bin="python${PYTHON_VERSION}"
+  local ensurepip_ready=0
+
+  if command -v "$python_bin" >/dev/null 2>&1 && "$python_bin" -m ensurepip --version >/dev/null 2>&1; then
+    ensurepip_ready=1
+  fi
+
+  if (( ensurepip_ready )); then
     return
   fi
 
-  log "installing Python ${PYTHON_VERSION} from deadsnakes"
+  log "ensuring Python ${PYTHON_VERSION} runtime, headers, and venv support from deadsnakes"
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo apt-get update -y
   sudo apt-get install -y --no-install-recommends \
