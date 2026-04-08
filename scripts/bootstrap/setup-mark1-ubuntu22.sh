@@ -175,6 +175,10 @@ prepare_submodules() {
 create_python_venv() {
   log "creating Python virtualenv at $VENV_DIR"
   "python${PYTHON_VERSION}" -m venv "$VENV_DIR"
+  if ! "$VENV_DIR/bin/python" -m pip --version >/dev/null 2>&1; then
+    log "virtualenv created without pip; bootstrapping pip with ensurepip"
+    "$VENV_DIR/bin/python" -m ensurepip --upgrade
+  fi
   "$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel
 }
 
