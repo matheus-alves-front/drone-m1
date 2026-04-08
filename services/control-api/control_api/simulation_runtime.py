@@ -148,8 +148,10 @@ class ShellSimulationRuntimeAdapter:
         current_status: SimulationSessionStatus,
     ) -> SimulationRuntimeInspection:
         paths = self.paths_for(session_id)
-        px4_alive = self._pid_alive(paths.px4_pid_file)
-        xrce_alive = self._pid_alive(paths.xrce_pid_file)
+        px4_pid = self._resolve_px4_pid(paths)
+        xrce_pid = self._resolve_xrce_pid(paths)
+        px4_alive = px4_pid is not None
+        xrce_alive = xrce_pid is not None
 
         if px4_alive and xrce_alive:
             status = SimulationSessionStatus.ACTIVE
@@ -179,13 +181,13 @@ class ShellSimulationRuntimeAdapter:
                 component_name="px4_sitl",
                 component_type="process",
                 status="active" if px4_alive else "inactive",
-                health_summary=f"pid_file={paths.px4_pid_file}",
+                health_summary=self._health_summary(paths.px4_pid_file, px4_pid),
             ),
             SimulationComponent(
                 component_name="micro_xrce_agent",
                 component_type="process",
                 status="active" if xrce_alive else "inactive",
-                health_summary=f"pid_file={paths.xrce_pid_file}",
+                health_summary=self._health_summary(paths.xrce_pid_file, xrce_pid),
             ),
             SimulationComponent(
                 component_name="runtime_paths",
@@ -252,17 +254,79 @@ class ShellSimulationRuntimeAdapter:
 
         return completed
 
-    def _pid_alive(self, pid_file: Path) -> bool:
+    def _health_summary(self, pid_file: Path, pid: int | None) -> str:
+        if pid is None:
+            return f"pid_file={pid_file}"
+        return f"pid_file={pid_file}; pid={pid}"
+
+    def _resolve_px4_pid(self, paths: SimulationRuntimePaths) -> int | None:
+        px4_binary = self._repo_root / "third_party" / "PX4-Autopilot" / "build" / "px4_sitl_default" / "bin" / "px4"
+        return self._resolve_process_pid(paths.px4_pid_file, str(px4_binary))
+
+    def _resolve_xrce_pid(self, paths: SimulationRuntimePaths) -> int | None:
+        return self._resolve_process_pid(paths.xrce_pid_file, "MicroXRCEAgent")
+
+    def _resolve_process_pid(self, pid_file: Path, command_fragment: str) -> int | None:
+        pid = self._read_pid_file(pid_file)
+        if pid is not None and self._pid_exists(pid):
+            return pid
+
+        fallback_pid = self._find_process_pid(command_fragment)
+        if fallback_pid is None:
+            return None
+
+        pid_file.parent.mkdir(parents=True, exist_ok=True)
+        pid_file.write_text(f"{fallback_pid}\n", encoding="utf-8")
+        return fallback_pid
+
+    def _find_process_pid(self, command_fragment: str) -> int | None:
+        completed = subprocess.run(
+            ["ps", "-eo", "pid=,args="],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode != 0:
+            return None
+
+        matches: list[int] = []
+        for line in completed.stdout.splitlines():
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                raw_pid, command = stripped.split(None, 1)
+            except ValueError:
+                continue
+            if command_fragment not in command:
+                continue
+            try:
+                matches.append(int(raw_pid))
+            except ValueError:
+                continue
+
+        if not matches:
+            return None
+        return max(matches)
+
+    def _read_pid_file(self, pid_file: Path) -> int | None:
         if not pid_file.exists():
-            return False
+            return None
 
         try:
-            pid = int(pid_file.read_text(encoding="utf-8").strip())
+            return int(pid_file.read_text(encoding="utf-8").strip())
         except ValueError:
-            return False
+            return None
 
+    def _pid_exists(self, pid: int) -> bool:
         try:
             os.kill(pid, 0)
         except OSError:
             return False
         return True
+
+    def _pid_alive(self, pid_file: Path) -> bool:
+        pid = self._read_pid_file(pid_file)
+        if pid is None:
+            return False
+        return self._pid_exists(pid)
