@@ -185,6 +185,26 @@ ensure_rosdep_ready() {
   rosdep update
 }
 
+source_ros_setup() {
+  local ros_setup="/opt/ros/${ROS_DISTRO}/setup.bash"
+  local had_nounset=0
+
+  [[ -f "$ros_setup" ]] || die "missing ROS setup script: $ros_setup"
+
+  if [[ $- == *u* ]]; then
+    had_nounset=1
+    set +u
+  fi
+
+  export AMENT_TRACE_SETUP_FILES="${AMENT_TRACE_SETUP_FILES:-}"
+  # shellcheck disable=SC1090
+  source "$ros_setup"
+
+  if (( had_nounset )); then
+    set -u
+  fi
+}
+
 prepare_submodules() {
   log "syncing git submodules"
   git -C "$ROOT_DIR" submodule update --init --recursive
@@ -246,13 +266,18 @@ install_ros_workspace_dependencies() {
     return
   fi
   log "installing ROS workspace dependencies via rosdep"
-  rosdep install --from-paths "$ROOT_DIR/robotics/ros2_ws/src" --ignore-src -r -y --rosdistro "$ROS_DISTRO"
+  rosdep install \
+    --from-paths "$ROOT_DIR/robotics/ros2_ws/src" \
+    --ignore-src \
+    -r \
+    -y \
+    --rosdistro "$ROS_DISTRO" \
+    --skip-keys "ament_python"
 }
 
 build_ros_workspace() {
   log "building ROS 2 workspace"
-  # shellcheck disable=SC1091
-  source "/opt/ros/${ROS_DISTRO}/setup.bash"
+  source_ros_setup
   cd "$ROOT_DIR/robotics/ros2_ws"
   colcon build --symlink-install --packages-up-to drone_bringup
 }
