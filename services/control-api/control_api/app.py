@@ -8,6 +8,7 @@ import uuid
 from typing import Any
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -170,6 +171,18 @@ def _status_code_for_control_plane_code(code: ControlPlaneErrorCode) -> int:
     if code == ControlPlaneErrorCode.NOT_SUPPORTED:
         return 501
     return 500
+
+
+def _cors_allow_origins() -> list[str]:
+    configured = os.environ.get("CONTROL_API_CORS_ALLOW_ORIGINS", "").strip()
+    if configured:
+        if configured == "*":
+            return ["*"]
+        return [item.strip() for item in configured.split(",") if item.strip()]
+    return [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    ]
 
 
 def create_app(
@@ -838,6 +851,14 @@ def create_app(
             )
 
     app = FastAPI(title="drone control api", version="0.1.0")
+    cors_origins = _cors_allow_origins()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.state.session_store = session_store
     app.state.run_store = run_store
     app.state.scenario_store = scenario_store

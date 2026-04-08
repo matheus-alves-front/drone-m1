@@ -77,9 +77,21 @@ Variáveis úteis:
 - `CONTROL_API_PORT`
 - `TELEMETRY_API_BASE_URL`
 - `CONTROL_API_STATE_DIR`
+- `CONTROL_API_CORS_ALLOW_ORIGINS`
 - `CONTROL_API_PERCEPTION_STREAM_URL`
 - `CONTROL_API_PERCEPTION_STREAM_MODE`
 - `CONTROL_API_PERCEPTION_STREAM_SOURCE`
+
+Para a Operator UI em desenvolvimento, a API já aceita por padrão:
+
+- `http://127.0.0.1:5173`
+- `http://localhost:5173`
+
+Se precisar expor a UI por outro host, por exemplo túnel remoto, use:
+
+```bash
+export CONTROL_API_CORS_ALLOW_ORIGINS="http://127.0.0.1:5173,http://localhost:5173,https://seu-host.externo"
+```
 
 O shell adapter também respeita o contrato existente de:
 
