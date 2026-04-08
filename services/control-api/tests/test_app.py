@@ -1347,6 +1347,40 @@ def test_mission_start_abort_and_reset_work_through_control_plane(tmp_path: Path
     assert "mission.reset:patrol_basic" in run_names
 
 
+def test_mission_backed_scenario_idle_state_releases_active_run(tmp_path: Path) -> None:
+    runtime = StubSimulationRuntime(tmp_path)
+    mission_runtime = StubMissionRuntime()
+    client = TestClient(
+        create_app(
+            read_model_adapter=StubReadModelAdapter(),
+            simulation_runtime=runtime,
+            mission_runtime=mission_runtime,
+            state_root=tmp_path / "state",
+        )
+    )
+
+    assert client.post("/api/v1/control/simulation/start", json={}).status_code == 200
+    assert client.post("/api/v1/control/missions/start", json={}).status_code == 200
+
+    mission_runtime.set_status(
+        MissionStatus.IDLE,
+        detail="mission reset to idle",
+        active=False,
+        terminal=False,
+        last_command="abort",
+        current_waypoint_index=0,
+        total_waypoints=3,
+    )
+
+    scenario_status = client.get("/api/v1/control/scenarios/patrol_basic/status")
+    assert scenario_status.status_code == 200
+    assert scenario_status.json()["data"]["status"] == "completed"
+
+    restarted = client.post("/api/v1/control/missions/start", json={})
+    assert restarted.status_code == 200
+    assert restarted.json()["data"]["status"] == "running"
+
+
 def test_mission_reset_requires_terminal_state(tmp_path: Path) -> None:
     runtime = StubSimulationRuntime(tmp_path)
     mission_runtime = StubMissionRuntime()

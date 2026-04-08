@@ -482,6 +482,8 @@ def create_app(
         return payload.to_dict()
 
     def mission_run_status(observation: MissionRuntimeObservation, *, cancel_requested: bool = False) -> RunStatus:
+        if observation.status == MissionStatus.IDLE and not observation.active:
+            return RunStatus.CANCELLED if cancel_requested else RunStatus.COMPLETED
         if observation.status == MissionStatus.COMPLETED:
             return RunStatus.COMPLETED
         if observation.status == MissionStatus.ABORTED:
