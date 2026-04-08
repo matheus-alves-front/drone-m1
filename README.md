@@ -39,6 +39,11 @@ Planeja a evolução para uma **plataforma robótica modular mais ampla**, com c
 11. `docs/v2/mark2/MARK2-SOFTWARE-ARCHITECTURE.md`
 12. `docs/v2/mark2/MARK2-ROADMAP.md`
 
+## Checklist operacional
+
+O bootstrap estrutural do repositório e a execução faseada continuam auditados em
+`docs/PROJECT-EXECUTION-CHECKLIST.md`.
+
 ## Como aplicar
 
 1. Copie este pacote para a raiz do repositório atual.
