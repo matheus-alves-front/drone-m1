@@ -27,6 +27,30 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
 }
 
+resolve_system_python_bin() {
+  local python_bin="/usr/bin/python${PYTHON_VERSION}"
+
+  if [[ -x "$python_bin" ]]; then
+    printf '%s\n' "$python_bin"
+    return
+  fi
+
+  python_bin="$(PATH=/usr/sbin:/usr/bin:/sbin:/bin command -v "python${PYTHON_VERSION}" || true)"
+  [[ -n "$python_bin" ]] || die "missing python${PYTHON_VERSION}; rerun the bootstrap after apt dependencies are installed"
+  printf '%s\n' "$python_bin"
+}
+
+find_system_python_bin() {
+  local python_bin="/usr/bin/python${PYTHON_VERSION}"
+
+  if [[ -x "$python_bin" ]]; then
+    printf '%s\n' "$python_bin"
+    return
+  fi
+
+  PATH=/usr/sbin:/usr/bin:/sbin:/bin command -v "python${PYTHON_VERSION}" 2>/dev/null || true
+}
+
 assert_ubuntu_jammy() {
   if [[ "${MARK1_SKIP_OS_CHECK:-0}" == "1" ]]; then
     log "skipping Ubuntu baseline check because MARK1_SKIP_OS_CHECK=1"
@@ -92,10 +116,12 @@ install_base_apt_packages() {
 }
 
 ensure_deadsnakes_python() {
-  local python_bin="python${PYTHON_VERSION}"
+  local python_bin
   local needs_python_support=0
 
-  if ! command -v "$python_bin" >/dev/null 2>&1; then
+  python_bin="$(find_system_python_bin)"
+
+  if [[ -z "$python_bin" ]]; then
     needs_python_support=1
   fi
 
@@ -119,6 +145,7 @@ ensure_deadsnakes_python() {
     "python${PYTHON_VERSION}-dev" \
     "python${PYTHON_VERSION}-venv"
 
+  python_bin="$(resolve_system_python_bin)"
   "$python_bin" -m ensurepip --version >/dev/null 2>&1 \
     || die "python${PYTHON_VERSION} is installed but ensurepip is still unavailable; verify python${PYTHON_VERSION}-venv on the VM"
 }
@@ -211,12 +238,20 @@ prepare_submodules() {
 }
 
 create_python_venv() {
+  local python_bin
+
   log "creating Python virtualenv at $VENV_DIR"
+  python_bin="$(resolve_system_python_bin)"
+
+  if [[ -n "${VIRTUAL_ENV:-}" ]]; then
+    log "active virtualenv detected at $VIRTUAL_ENV; forcing system Python via $python_bin"
+  fi
+
   if [[ -d "$VENV_DIR" ]]; then
     log "resetting existing Python virtualenv at $VENV_DIR"
     rm -rf "$VENV_DIR"
   fi
-  "python${PYTHON_VERSION}" -m venv "$VENV_DIR"
+  "$python_bin" -m venv "$VENV_DIR"
   if ! "$VENV_DIR/bin/python" -m pip --version >/dev/null 2>&1; then
     log "virtualenv created without pip; bootstrapping pip with ensurepip"
     "$VENV_DIR/bin/python" -m ensurepip --upgrade \
