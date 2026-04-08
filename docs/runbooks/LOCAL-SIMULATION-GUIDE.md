@@ -12,6 +12,18 @@ Explicar como instalar o ambiente local, subir o projeto no Gazebo, visualizar a
 - PX4 `v1.16.1`
 - `px4_msgs` alinhado com `release/1.16`
 
+## Recomendacao de VM para Mark 1
+
+Para a trilha visual/manual da Mark 1, a recomendacao pratica agora e:
+
+- Ubuntu 22.04
+- 4 vCPU ou mais
+- 8 GB de RAM ou mais
+- 80 GB de disco provisionado
+- pelo menos 35 GB livres antes do primeiro bootstrap
+
+As rodadas de validacao visual da Mark 1 geram build do PX4, cache do `Micro XRCE-DDS Agent`, workspace ROS 2, `node_modules`, logs da simulacao e artefatos temporarios do control plane. Em VMs de 24 GB o ambiente tende a entrar em ciclo de falta de espaco durante a validacao.
+
 Se voce estiver fora de Ubuntu 22.04, o caminho mais seguro continua sendo o devcontainer ou os validadores em Docker.
 
 ### Nota importante para Ubuntu 24.04
@@ -141,6 +153,30 @@ git clone --recurse-submodules git@github.com:matheus-alves-front/drone-m1.git
 cd drone-m1
 git submodule update --init --recursive
 ```
+
+## Bootstrap unico do Ubuntu 22.04
+
+Se voce estiver montando uma VM nova no baseline oficial, o caminho mais simples agora e:
+
+```bash
+bash scripts/bootstrap/setup-mark1-ubuntu22.sh
+```
+
+Esse script:
+
+- instala dependencias de sistema do baseline
+- instala Python 3.11 para a `.venv-r3`
+- instala Gazebo Harmonic
+- instala ROS 2 Humble
+- instala Node.js para o dashboard
+- sincroniza o submodule do PX4
+- cria a `.venv-r3` e instala as dependencias Python do projeto
+- instala `node_modules` do dashboard
+- prepara o cache do `Micro XRCE-DDS Agent`
+- roda `colcon build --packages-up-to drone_bringup`
+- executa checks basicos do bootstrap
+
+Depois dele, o repositório fica pronto para subir `telemetry-api`, `control-api`, `dashboard`, `bringup` e iniciar a simulacao pelo control plane.
 
 Validar o bootstrap:
 

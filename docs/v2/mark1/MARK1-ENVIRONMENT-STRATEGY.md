@@ -21,6 +21,16 @@ Deve existir um caminho visual e manual suportado como produto:
 - control actions
 - mission/fault/perception
 
+### 4. Bootstrap repetível
+Deve existir um caminho único para preparar uma máquina nova no baseline oficial do Mark 1, sem depender de memória humana para instalar Python, ROS 2, Gazebo, Node.js, PX4 e caches auxiliares.
+
+### 5. Orçamento de ambiente
+O ambiente oficial precisa considerar disco e não só compatibilidade de pacotes.
+
+- baseline local recomendado: Ubuntu 22.04 + ROS 2 Humble
+- VM recomendada para operação visual/manual: 80 GB de disco
+- abaixo de ~35 GB livres o ciclo de validacao tende a falhar por build/log/cache antes de falhar por código
+
 ## Resultado desejado
 Uma pessoa nova no projeto deve conseguir responder:
 - qual ambiente usar para desenvolvimento?
