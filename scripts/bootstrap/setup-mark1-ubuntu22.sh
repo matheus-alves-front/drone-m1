@@ -232,9 +232,13 @@ build_micro_xrce_agent_cache() {
   rm -rf "$AGENT_SRC_DIR" "$AGENT_BUILD_DIR" "$AGENT_INSTALL_DIR"
   mkdir -p "$(dirname "$AGENT_SRC_DIR")"
   git clone --branch "$AGENT_TAG" --depth 1 https://github.com/eProsima/Micro-XRCE-DDS-Agent.git "$AGENT_SRC_DIR"
-  cmake -S "$AGENT_SRC_DIR" -B "$AGENT_BUILD_DIR" -DCMAKE_BUILD_TYPE=Release
+  cmake \
+    -S "$AGENT_SRC_DIR" \
+    -B "$AGENT_BUILD_DIR" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$AGENT_INSTALL_DIR"
   cmake --build "$AGENT_BUILD_DIR" --target uagent -j"$(nproc)"
-  cmake --install "$AGENT_BUILD_DIR" --prefix "$AGENT_INSTALL_DIR"
+  cmake --install "$AGENT_BUILD_DIR"
 }
 
 install_ros_workspace_dependencies() {
