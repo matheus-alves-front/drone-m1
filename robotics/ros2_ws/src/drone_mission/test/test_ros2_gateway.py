@@ -109,6 +109,43 @@ class TestRos2MissionGateway(unittest.TestCase):
 
         asyncio.run(run_case())
 
+    def test_ros2_gateway_waits_briefly_for_preflight_before_arming(self) -> None:
+        async def run_case() -> None:
+            shared = SharedGatewayState(
+                vehicle_state=FakeVehicleState(
+                    connected=True,
+                    position_valid=True,
+                    preflight_checks_pass=False,
+                )
+            )
+            published: list[tuple[str, dict[str, float]]] = []
+            gateway = build_gateway(shared, published)
+
+            async def clear_preflight_gate() -> None:
+                await asyncio.sleep(0.05)
+                shared.vehicle_state = FakeVehicleState(
+                    connected=True,
+                    position_valid=True,
+                    preflight_checks_pass=True,
+                )
+
+            async def publish_ack() -> None:
+                while not published:
+                    await asyncio.sleep(0.01)
+                await asyncio.sleep(0.02)
+                shared.command_status = FakeCommandStatus(command="arm", accepted=True, result_label="ACCEPTED")
+                shared.command_status_serial += 1
+
+            await asyncio.gather(
+                gateway.arm(timeout_s=1.0),
+                clear_preflight_gate(),
+                publish_ack(),
+            )
+
+            self.assertEqual(published, [("arm", {})])
+
+        asyncio.run(run_case())
+
     def test_ros2_gateway_wait_until_armed_requires_real_vehicle_state(self) -> None:
         async def run_case() -> None:
             shared = SharedGatewayState(
@@ -247,6 +284,49 @@ class TestRos2MissionGateway(unittest.TestCase):
             await gateway.arm(timeout_s=1.0)
 
             self.assertEqual([command for command, _payload in published], ["arm", "arm"])
+
+        asyncio.run(run_case())
+
+    def test_ros2_gateway_uses_timeout_budget_when_temporary_rejection_lasts_longer_than_retry_limit(self) -> None:
+        async def run_case() -> None:
+            shared = SharedGatewayState(vehicle_state=FakeVehicleState())
+            published: list[tuple[str, dict[str, float]]] = []
+            attempt_counter = 0
+            loop = asyncio.get_running_loop()
+
+            def publish_command(command: str, **payload: float) -> None:
+                nonlocal attempt_counter
+                published.append((command, payload))
+                attempt_counter += 1
+
+                async def publish_status() -> None:
+                    await asyncio.sleep(0.02)
+                    if attempt_counter < 3:
+                        shared.command_status = FakeCommandStatus(
+                            command="arm",
+                            accepted=False,
+                            result_label="TEMPORARILY_REJECTED",
+                        )
+                    else:
+                        shared.command_status = FakeCommandStatus(
+                            command="arm",
+                            accepted=True,
+                            result_label="ACCEPTED",
+                        )
+                    shared.command_status_serial += 1
+
+                loop.create_task(publish_status())
+
+            gateway = Ros2MissionGateway(
+                publish_command=publish_command,
+                get_vehicle_state=lambda: shared.vehicle_state,
+                get_command_status=lambda: (shared.command_status_serial, shared.command_status),
+                command_retry_interval_s=0.1,
+                max_command_retries=1,
+            )
+            await gateway.arm(timeout_s=0.5)
+
+            self.assertEqual([command for command, _payload in published], ["arm", "arm", "arm"])
 
         asyncio.run(run_case())
 

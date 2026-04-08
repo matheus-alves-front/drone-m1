@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 import time
 from collections.abc import AsyncIterator, Callable
 from typing import Any, Protocol
@@ -256,6 +257,7 @@ class Ros2MissionGateway:
         )
 
     async def arm(self, timeout_s: float) -> None:
+        await self._wait_for_arm_readiness(timeout_s)
         await self._publish_and_wait_ack("arm", timeout_s)
 
     async def wait_until_armed(self, timeout_s: float) -> None:
@@ -351,10 +353,13 @@ class Ros2MissionGateway:
 
     async def _publish_and_wait_ack(self, command_name: str, timeout_s: float, **payload: float) -> None:
         deadline = time.monotonic() + timeout_s
+        # Respect the full timeout budget even when PX4 keeps returning a
+        # temporarily rejected ack for a few seconds during simulator warm-up.
+        attempt_limit = max(self._max_command_retries, math.ceil(timeout_s / self._command_retry_interval_s) + 1)
         attempt = 0
         last_error = f"{command_name} timed out while waiting for PX4 acknowledgement"
 
-        while attempt < self._max_command_retries and time.monotonic() < deadline:
+        while attempt < attempt_limit and time.monotonic() < deadline:
             attempt += 1
             start_serial, _ = self._get_command_status()
             self._last_command_name = command_name
@@ -376,13 +381,31 @@ class Ros2MissionGateway:
                     result_label = str(getattr(status, "result_label", "UNKNOWN"))
                     if result_label == "TEMPORARILY_REJECTED":
                         last_error = f"{command_name} temporarily rejected by PX4"
-                        await asyncio.sleep(self._command_retry_interval_s)
+                        remaining_s = max(deadline - time.monotonic(), 0.0)
+                        if remaining_s <= 0.0:
+                            break
+                        await asyncio.sleep(min(self._command_retry_interval_s, remaining_s))
                         break
                     raise MissionCommandFailed(f"{command_name} rejected by PX4: {result_label}")
 
                 await asyncio.sleep(0.05)
 
         raise MissionTimeout(last_error)
+
+    async def _wait_for_arm_readiness(self, timeout_s: float) -> None:
+        # Mission runs can start immediately after the simulation becomes
+        # reachable. PX4 may still be settling estimator/home-position checks,
+        # so give it a short grace period before the first arm command.
+        grace_timeout_s = min(max(timeout_s * 0.5, 1.0), 5.0)
+        deadline = time.monotonic() + grace_timeout_s
+        while time.monotonic() < deadline:
+            state = self._get_vehicle_state()
+            if state is not None and bool(getattr(state, "connected", False)) and bool(
+                getattr(state, "position_valid", False)
+            ):
+                if bool(getattr(state, "preflight_checks_pass", False)) or bool(getattr(state, "armed", False)):
+                    return
+            await asyncio.sleep(0.1)
 
     async def _wait_for_vehicle_state(
         self,
