@@ -93,13 +93,21 @@ install_base_apt_packages() {
 
 ensure_deadsnakes_python() {
   local python_bin="python${PYTHON_VERSION}"
-  local ensurepip_ready=0
+  local needs_python_support=0
 
-  if command -v "$python_bin" >/dev/null 2>&1 && "$python_bin" -m ensurepip --version >/dev/null 2>&1; then
-    ensurepip_ready=1
+  if ! command -v "$python_bin" >/dev/null 2>&1; then
+    needs_python_support=1
   fi
 
-  if (( ensurepip_ready )); then
+  if ! dpkg-query -W -f='${Status}' "${python_bin}-venv" 2>/dev/null | grep -q "install ok installed"; then
+    needs_python_support=1
+  fi
+
+  if ! dpkg-query -W -f='${Status}' "${python_bin}-dev" 2>/dev/null | grep -q "install ok installed"; then
+    needs_python_support=1
+  fi
+
+  if (( ! needs_python_support )) && "$python_bin" -m ensurepip --version >/dev/null 2>&1; then
     return
   fi
 
@@ -110,6 +118,9 @@ ensure_deadsnakes_python() {
     "python${PYTHON_VERSION}" \
     "python${PYTHON_VERSION}-dev" \
     "python${PYTHON_VERSION}-venv"
+
+  "$python_bin" -m ensurepip --version >/dev/null 2>&1 \
+    || die "python${PYTHON_VERSION} is installed but ensurepip is still unavailable; verify python${PYTHON_VERSION}-venv on the VM"
 }
 
 ensure_gazebo_repo() {
@@ -181,10 +192,15 @@ prepare_submodules() {
 
 create_python_venv() {
   log "creating Python virtualenv at $VENV_DIR"
+  if [[ -d "$VENV_DIR" ]]; then
+    log "resetting existing Python virtualenv at $VENV_DIR"
+    rm -rf "$VENV_DIR"
+  fi
   "python${PYTHON_VERSION}" -m venv "$VENV_DIR"
   if ! "$VENV_DIR/bin/python" -m pip --version >/dev/null 2>&1; then
     log "virtualenv created without pip; bootstrapping pip with ensurepip"
-    "$VENV_DIR/bin/python" -m ensurepip --upgrade
+    "$VENV_DIR/bin/python" -m ensurepip --upgrade \
+      || die "virtualenv bootstrap could not enable pip; confirm python${PYTHON_VERSION}-venv is installed and rerun the bootstrap"
   fi
   "$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel
 }
